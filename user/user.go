@@ -1,7 +1,7 @@
 /**
  * @project xlogrus
  * @author justin-ren
- * @desc setup user trace adapter by logrus
+ * @desc create manual trace log by logrus with log name trace.log by default
  * @date 1:20 PM 2/9/23
  **/
 
@@ -15,7 +15,7 @@ import (
 
 func GetOpt() *c.OptLog {
 	opt := c.InitOpt()
-	opt.FileNamePrefix = "trace"
+	opt.FileNamePrefix = "trace.log"
 	return opt
 }
 
