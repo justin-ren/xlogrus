@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"github.com/itchyny/timefmt-go"               //convert golang time layout to linux time layout
 	lTest "github.com/sirupsen/logrus/hooks/test" //logrus tools for test
-	ast "github.com/stretchr/testify/assert"      //continue next code in case even failed
-	req "github.com/stretchr/testify/require"     //jump out the case if failed
+	ast "github.com/stretchr/testify/assert"      //continue next case in case even failed
+	req "github.com/stretchr/testify/require"     //exit if failed
 	"io"
 	"os"
 	"strings"

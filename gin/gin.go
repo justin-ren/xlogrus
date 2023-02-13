@@ -71,9 +71,9 @@ func New(opt *OptGin) (*logrus.Logger, gin.HandlerFunc, error) {
 					entry.Error(ctx.Errors.ByType(gin.ErrorTypePrivate).String())
 				} else {
 					//msg := fmt.Sprintf("%s - \"%s %s\" %d %d (%dms)", clientIP, method, path, statusCode, bodySize, latency)
-					if statusCode >= http.StatusInternalServerError { //返回码500自动error级别
+					if statusCode >= http.StatusInternalServerError { //500 assign to error level
 						entry.Error()
-					} else if statusCode >= http.StatusBadRequest { //400返回码,自动warn级别
+					} else if statusCode >= http.StatusBadRequest { //400 assign to warn level
 						entry.Warn()
 					} else {
 						entry.Info()

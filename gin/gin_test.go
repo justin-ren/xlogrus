@@ -1,8 +1,8 @@
 /**
  * @project xlogrus
  * @author justin-ren
- * @desc test logrus for gin middleware against access info(file and stdout)
- * 		and skip route
+ * @desc test logrus for gin middleware with file access.log w/o color
+ *      and stdout w/ color, skip route function
  * @date 7:32 PM 2/12/23
  **/
 
@@ -21,8 +21,8 @@ import (
 
 	"github.com/itchyny/timefmt-go"               //convert golang time layout to linux time layout
 	lTest "github.com/sirupsen/logrus/hooks/test" //logrus tools for test
-	//ast "github.com/stretchr/testify/assert"      //continue next code in case even failed
-	req "github.com/stretchr/testify/require" //jump out the case if failed
+	//ast "github.com/stretchr/testify/assert"      //continue next case in case even failed
+	req "github.com/stretchr/testify/require" //exit if failed
 )
 
 type testRoute struct {
