@@ -25,7 +25,8 @@ func TestUserLog(t *testing.T) {
 	//get init value
 	opt := GetOpt()
 	//create log file under /tmp/
-	opt.LogPath = fmt.Sprintf("%v/", os.TempDir())
+	opt.LogPath = fmt.Sprintf("%v/logs/", os.TempDir())
+	opt.FileNameSuffixTimeFormat = "%Y%m%d%H%M%S"
 	//create logrus.Logger
 	lg, err := New(opt)
 	req.NoError(t, err)

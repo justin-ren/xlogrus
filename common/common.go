@@ -28,6 +28,7 @@ type OptLog struct {
 	//example prefix 'access' in access.log.20230105
 	FileNamePrefix string
 	//example suffix '%Y%m%d' for '20230105' in access.log.20230105
+	//"%Y%m%d%H%M%S" for yyyymmddhhmmss
 	FileNameSuffixTimeFormat string
 	//error level log will be saved in seperated error.log for keeping more time if it's ture
 	SetErrFileHook bool
@@ -110,7 +111,7 @@ func (opt *OptLog) ConfigLogrus() (*logrus.Logger, error) {
 		//全路径日志前缀
 		FileNamePrefix = fmt.Sprintf("%s%s", opt.LogPath, opt.ErrLogPrefix)
 		//errWriter for error log such as ./logs/error.log.202301
-		errWriter, err := logRotate.New(fmt.Sprintf("%s.%s", FileNamePrefix, opt.ErrLogSuffix),
+		errWriter, err := logRotate.New(fmt.Sprintf("%v.%v", FileNamePrefix, opt.ErrLogSuffix),
 			logRotate.WithLinkName(FileNamePrefix),           // such as ln -s error.log.202301 error.log
 			logRotate.WithMaxAge(-1),                         //disable keep log by create time
 			logRotate.WithRotationCount(uint(opt.KeepCount)), //keep log by count
