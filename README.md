@@ -171,7 +171,7 @@ $
 
 ### Gorm log
 - example code
-```azure
+```golang
 package main
 
 import (
