@@ -75,7 +75,7 @@ func main() {
 }
 ```
 - color is enabled in stdout
-
+![Screenshot from 2023-02-14 08-12-05](https://user-images.githubusercontent.com/9739410/218624412-49ee8ab3-d418-44e1-9e03-7cf06918c835.png)
 - color is disabled in log file
 ```bash
 $ cat /tmp/logs/user.log
@@ -144,7 +144,7 @@ func main() {
 }
 ```
 - color is enabled in stdout
-
+![Screenshot from 2023-02-14 09-17-54](https://user-images.githubusercontent.com/9739410/218624450-03913136-7152-40c4-9e3b-2780d850eb9a.png)
 - color is disabled in log file
 ```bash
 $ curl localhost:8080/hello
@@ -222,7 +222,7 @@ func main() {
 
 
 - color is enabled in stdout
-
+![Screenshot from 2023-02-14 09-46-15](https://user-images.githubusercontent.com/9739410/218624507-f94362ce-26d1-40d3-937a-eb1036ea2c1b.png)
 - color is disabled in log file
 
 ```bash
