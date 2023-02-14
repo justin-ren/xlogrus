@@ -28,7 +28,6 @@ type OptLog struct {
 	//example prefix 'access' in access.log.20230105
 	FileNamePrefix string
 	//example suffix '%Y%m%d' for '20230105' in access.log.20230105
-	//"%Y%m%d%H%M%S" for yyyymmddhhmmss
 	FileNameSuffixTimeFormat string
 	//error level log will be saved in seperated error.log for keeping more time if it's ture
 	SetErrFileHook bool
@@ -44,13 +43,18 @@ type OptLog struct {
 	ErrLogSuffix string
 }
 
+/*InitOpt
+ * @msg init logrus params
+ * @return: *OptLog
+ */
 func InitOpt() *OptLog {
 	return &OptLog{
 		StdoutTimeFormat:  "06/01/02 15:04:05",
 		LogFileTimeFormat: "2006-01-02 15:04:05.000000",
 		//path for all logs
-		LogPath:                  "./logs/",
-		FileNamePrefix:           "log",
+		LogPath:        "./logs/",
+		FileNamePrefix: "log",
+		//not work if specify %H%m%s, but below is enough
 		FileNameSuffixTimeFormat: "%Y%m%d",
 		SetErrFileHook:           true,
 		//keep log count
@@ -62,6 +66,16 @@ func InitOpt() *OptLog {
 	}
 }
 
+/*ConfigLogrus
+ * @msg to configure logrus with
+ * 		1. log format with color, timestamp
+ *	   	2. log redirect by loglevel
+ *		3. create file link for alive log
+ *		4. set log keeping count
+ * @receiver opt
+ * @return: *logrus.Logger
+ * @return: error
+ */
 func (opt *OptLog) ConfigLogrus() (*logrus.Logger, error) {
 	log := logrus.New()
 	log.SetLevel(opt.LogLevel)
@@ -87,7 +101,7 @@ func (opt *OptLog) ConfigLogrus() (*logrus.Logger, error) {
 		return log, errors.Cause(err)
 	}
 	FileNamePrefix := fmt.Sprintf("%s%s", opt.LogPath, opt.FileNamePrefix)
-	logWriter, err := logRotate.New(fmt.Sprintf("%s.%s", FileNamePrefix, opt.FileNameSuffixTimeFormat),
+	logWriter, err := logRotate.New(fmt.Sprintf("%v.%v", FileNamePrefix, opt.FileNameSuffixTimeFormat),
 		logRotate.WithLinkName(FileNamePrefix),           //create log link, such as ln -s access.log.20230205 access.log
 		logRotate.WithMaxAge(-1),                         //disable remove log by create time
 		logRotate.WithRotationCount(uint(opt.KeepCount)), //set count for keeping log
@@ -108,13 +122,13 @@ func (opt *OptLog) ConfigLogrus() (*logrus.Logger, error) {
 	log.AddHook(logHook)
 	fmt.Println(logWriter.CurrentFileName())
 	if opt.SetErrFileHook {
-		//全路径日志前缀
+		//full path for log filename
 		FileNamePrefix = fmt.Sprintf("%s%s", opt.LogPath, opt.ErrLogPrefix)
 		//errWriter for error log such as ./logs/error.log.202301
 		errWriter, err := logRotate.New(fmt.Sprintf("%v.%v", FileNamePrefix, opt.ErrLogSuffix),
 			logRotate.WithLinkName(FileNamePrefix),           // such as ln -s error.log.202301 error.log
-			logRotate.WithMaxAge(-1),                         //disable keep log by create time
-			logRotate.WithRotationCount(uint(opt.KeepCount)), //keep log by count
+			logRotate.WithMaxAge(-1),                         //disable keep log by created time
+			logRotate.WithRotationCount(uint(opt.KeepCount)), //keep alive log by count
 		)
 
 		if err != nil {

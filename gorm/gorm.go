@@ -21,16 +21,20 @@ import (
 )
 
 type OptGorm struct {
+	//ignore if not found error happened
 	SkipErrRecordNotFound bool
-	SlowThreshold         time.Duration
-	IsHelper              bool
-	BKeywords             []BannedKeyword
+	//slow sql threshold
+	SlowThreshold time.Duration
+	//record line number and filename
+	IsHelper bool
+	//replace sensitive word, such as password
+	BKeywords []BannedKeyword
 
 	// if set to true, it will add latency information for your queries
 	LogLatency bool
 
-	//gorm log level for automatically triggering,
-	//logrus log level is debug and should not be modified
+	//gorm log level for automatically triggering
+	//logrus log level is debug and don't need to modify
 	LogLevel logger.LogLevel
 
 	//logrus parameters
@@ -109,6 +113,10 @@ type BannedKeyword struct {
 	IsCaseSensitive bool
 }
 
+/*GetOpt
+ * @msg get default values
+ * @return: *OptGorm
+ */
 func GetOpt() *OptGorm {
 	opt := c.InitOpt()
 	opt.FileNamePrefix = "db.log"
@@ -132,6 +140,12 @@ func GetOpt() *OptGorm {
 	}
 }
 
+/*ignoreBKeyword
+ * @msg deal with sensitive word, and replaced that line with "ignore line with banned word..."
+ * @receiver lm
+ * @param lContent
+ * @return: string
+ */
 func (lm *LoggerGorm) ignoreBKeyword(lContent string) string {
 	if len(lm.Opt.BKeywords) <= 0 {
 		return lContent

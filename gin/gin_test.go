@@ -38,7 +38,7 @@ func ginLogHandle(t *testing.T, tr *testRoute, opt *OptGin, r *gin.Engine,
 	r.GET(tr.url, func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": tr.want})
 	})
-	//NewServer is really running a server and need to shut it down
+	//NewServer really runs a server and need to shut it down
 	//httptest.NewServer(r)
 	request := httptest.NewRequest("GET", tr.url, nil)
 	response := httptest.NewRecorder()
@@ -97,6 +97,7 @@ func TestGinLog(t *testing.T) {
 	var err error
 	var r *gin.Engine
 	var hook *lTest.Hook
+
 	t.Run("initGinLog", func(t *testing.T) {
 		opt = GetOpt()
 		opt.OptLogrus.LogPath = fmt.Sprintf("%v/", os.TempDir())

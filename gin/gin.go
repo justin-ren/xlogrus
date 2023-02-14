@@ -18,11 +18,15 @@ import (
 )
 
 type OptGin struct {
-	//example 'user/logout', this route will be ignored in adapter
+	//example 'user/logout', this route will be ignored in log
 	SkipRoute map[string]struct{}
 	OptLogrus *c.OptLog
 }
 
+/*GetOpt
+ * @msg get default parameters
+ * @return: *OptGin
+ */
 func GetOpt() *OptGin {
 	opt := c.InitOpt()
 	opt.FileNamePrefix = "access.log"
@@ -31,6 +35,13 @@ func GetOpt() *OptGin {
 	}
 }
 
+/*New
+ * @msg create logrus instance for gin middleware
+ * @param opt
+ * @return: *logrus.Logger  return logrus for configuration in advance
+ * @return: gin.HandlerFunc
+ * @return: error
+ */
 func New(opt *OptGin) (*logrus.Logger, gin.HandlerFunc, error) {
 
 	if log, err := opt.OptLogrus.ConfigLogrus(); err != nil {
@@ -70,6 +81,7 @@ func New(opt *OptGin) (*logrus.Logger, gin.HandlerFunc, error) {
 				if len(ctx.Errors) > 0 {
 					entry.Error(ctx.Errors.ByType(gin.ErrorTypePrivate).String())
 				} else {
+					//base on response value to match log level
 					//msg := fmt.Sprintf("%s - \"%s %s\" %d %d (%dms)", clientIP, method, path, statusCode, bodySize, latency)
 					if statusCode >= http.StatusInternalServerError { //500 assign to error level
 						entry.Error()
