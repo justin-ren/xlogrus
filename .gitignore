@@ -23,6 +23,7 @@
 # vendor/
 
 # Go workspace file
+go.work.sum
 go.work
 
 ### GoLand ###
