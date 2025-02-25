@@ -56,15 +56,20 @@ func main() {
 	opt.LogPath = "/tmp/logs/"
 	//below log full name is user.log.20230212, default is trace.log
 	opt.FileNamePrefix = "user.log"
+	if err := opt.SetXLevel("debug"); err != nil {
+		fmt.Printf("%+v\n", errors.Cause(err))
+		panic(err)
+	}
 
-	lg, err := uLog.New(opt)
-	if err != nil {
+	var lg *logrus.Logger
+	var err error
+	if lg, err = uLog.New(opt); err != nil {
 		fmt.Printf("%+v\n", errors.Cause(err))
 		panic(err)
 	}
 	//below log would be saved in user.log with timestamp %Y%m and keep 7 files by default
 	//so automatically keep 7 days logs
-	//To modify count of loop files by opt.KeepCount 
+	//To modify count of loop files by opt.KeepCount
 	lg.Debugln("debug msg")
 	lg.Infoln("info msg")
 	//below log level would be saved in error.log with timestamp %Y%m and keep 7 files by default`
@@ -73,6 +78,7 @@ func main() {
 	lg.Errorln("error msg")
 	lg.Fatalf("%+v", errors.New("error stack")) //save error stack to log files
 }
+
 ```
 - color is enabled in stdout
 ![Screenshot from 2023-02-14 08-12-05](https://user-images.githubusercontent.com/9739410/218624412-49ee8ab3-d418-44e1-9e03-7cf06918c835.png)
@@ -112,20 +118,20 @@ func main() {
 
 	opt := GinLog.GetOpt()
 	//path must end with '/',default is ./logs/
-	opt.OptLogrus.LogPath = "/tmp/logs/"
+	opt.LogPath = "/tmp/logs/"
 	//full name of loop logs will be gin.log.202302013,default is access.log
-	opt.OptLogrus.FileNamePrefix = "gin.log"
+	opt.FileNamePrefix = "gin.log"
 
 	//timestamp of log file is defined as following
 	//"%Y%m%d" is default
-	//opt.OptLogrus.FileNameSuffixTimeFormat = "%Y%m%d"
+	//opt.FileNameSuffixTimeFormat = "%Y%m%d"
 	//will not log info for route /skip
 	opt.SkipRoute = map[string]struct{}{
 		"/skip": {},
 	}
 	//keep cut of loop log is defined here
 	//7 is default
-	//opt.OptLogrus.KeepCount = 7
+	//opt.KeepCount = 7
 	_, gLog, err := GinLog.New(opt)
 	r := gin.New()
 	r.Use(gLog, gin.Recovery())
@@ -187,20 +193,20 @@ func main() {
 
 	opt := GinLog.GetOpt()
 	//path must end with '/',default is ./logs/
-	opt.OptLogrus.LogPath = "/tmp/logs/"
+	opt.LogPath = "/tmp/logs/"
 	//full name of loop logs will be gin.log.202302013,default is access.log
-	opt.OptLogrus.FileNamePrefix = "gin.log"
+	opt.FileNamePrefix = "gin.log"
 
 	//timestamp of log file is defined as following
 	//"%Y%m%d" is default
-	opt.OptLogrus.FileNameSuffixTimeFormat = "%Y%m%d"
+	opt.FileNameSuffixTimeFormat = "%Y%m%d"
 	//will not log info for route /skip
 	opt.SkipRoute = map[string]struct{}{
 		"/skip": {},
 	}
 	//keep cut of loop log is defined here
 	//7 is default
-	opt.OptLogrus.KeepCount = 7
+	opt.KeepCount = 7
 	_, gLog, err := GinLog.New(opt)
 	r := gin.New()
 	r.Use(gLog, gin.Recovery())

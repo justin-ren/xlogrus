@@ -9,12 +9,13 @@ package common
 
 import (
 	"fmt"
+	"os"
+
 	logRotate "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/pkg/errors"
 	fileLogHook "github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	logFmt "github.com/x-cray/logrus-prefixed-formatter"
-	"os"
 )
 
 type OptLog struct {
@@ -64,6 +65,23 @@ func InitOpt() *OptLog {
 		ErrLogPrefix: "error.log",
 		ErrLogSuffix: "%Y%m",
 	}
+}
+
+/*SetXLevel
+ * @msg set log level, if it's warn
+ *    	then will not record with level trace, debug and info
+ *
+ * @receiver levelName : trace|debug|info|warning|warn|error|fatal|panic
+ * @return: *logrus.Logger
+ * @return: error
+ */
+func (opt *OptLog) SetXLevel(levelName string) error {
+	var err error
+	opt.LogLevel, err = logrus.ParseLevel(levelName)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 /*ConfigLogrus
