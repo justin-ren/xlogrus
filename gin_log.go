@@ -1,51 +1,66 @@
-/**
- * @project xlogrus
- * @author justin-ren
- * @desc create gin middleware log which can be automatically called,
- *       log name is access.log by default
- * @date 4:03 PM 2/9/23
- **/
-
-package gin
+/*
+ * @Author: justin-ren
+ * @Date: 2025-03-01 02:50:20
+ * @LastEditors: justin-ren
+ * @LastEditTime: 2025-03-04 13:25:36
+ * @FilePath: /xlogrus/gin_log.go
+ * @Description: gin event log
+ *
+ */
+package xlogrus
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	c "github.com/justin-ren/xlogrus/common"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"net/http"
-	"time"
 )
 
-type OptGin struct {
-	//example 'user/logout', this route will be ignored in log
+type GinOpt struct {
+	*c.OptLog
 	SkipRoute map[string]struct{}
-	OptLogrus *c.OptLog
 }
 
-/*GetOpt
- * @msg get default parameters
- * @return: *OptGin
- */
-func GetOpt() *OptGin {
-	opt := c.InitOpt()
+func GetGinOpt() *GinOpt {
+	opt := GinOpt{OptLog: c.InitOpt()}
 	opt.FileNamePrefix = "access.log"
-	return &OptGin{
-		OptLogrus: opt,
-	}
+
+	return &opt
 }
 
-/*New
- * @msg create logrus instance for gin middleware
- * @param opt
- * @return: *logrus.Logger  return logrus for configuration in advance
- * @return: gin.HandlerFunc
- * @return: error
- */
-func New(opt *OptGin) (*logrus.Logger, gin.HandlerFunc, error) {
+func (opt *GinOpt) SetSkipRoute(r map[string]struct{}) error {
+	opt.SkipRoute = r
+	return nil
+}
 
-	if log, err := opt.OptLogrus.ConfigLogrus(); err != nil {
-		return log, func(ctx *gin.Context) {}, errors.Cause(err)
+func WithSkipRoute[
+	T any,
+	PT interface {
+		*T
+		SetSkipRoute(map[string]struct{}) error
+	},
+](r map[string]struct{}) c.LogOption[T] {
+	return c.NewLogOptionFunc(func(t *T) error {
+		return PT(t).SetSkipRoute(r)
+	})
+}
+
+func NewGinLog(setFunc ...c.LogOption[GinOpt]) (*TLogrus, gin.HandlerFunc, *GinOpt, error) {
+	// 先初始化 GinOpt 结构体
+	opt := GetGinOpt()
+
+	//调用With函数修改GinOpt的默认值
+	for _, f := range setFunc {
+		if err := f.Apply(opt); err != nil {
+			return nil, nil, nil, errors.Wrap(err, "failed to apply log option")
+		}
+	}
+
+	if log, err := opt.ConfigLogrus(); err != nil {
+		return log, nil, nil, errors.Cause(err)
 	} else {
 		return log,
 			func(ctx *gin.Context) {
@@ -92,6 +107,7 @@ func New(opt *OptGin) (*logrus.Logger, gin.HandlerFunc, error) {
 					}
 				}
 			},
+			opt,
 			nil
 	}
 }

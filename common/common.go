@@ -1,9 +1,12 @@
-/**
- * @project xlogrus
- * @author justin-ren
- * @desc create log folder, configure logrus with fileHook log rotated, log format and so on
- * @date 5:00 PM 2/9/23
- **/
+/*
+ * @Author: justin-ren
+ * @Date: 2025-02-26 02:11:15
+ * @LastEditors: justin-ren
+ * @LastEditTime: 2025-03-04 09:10:35
+ * @FilePath: /xlogrus-edit/xlogrus/common/common.go
+ * @Description: basic configuration for logrus
+ *
+ */
 
 package common
 
@@ -44,6 +47,77 @@ type OptLog struct {
 	ErrLogSuffix string
 }
 
+// SetStdoutTimeFormat sets the stdout time format.
+func (o *OptLog) SetStdoutTimeFormat(format string) error {
+	o.StdoutTimeFormat = format
+	return nil
+}
+
+// SetLogFileTimeFormat sets the log file time format.
+func (o *OptLog) SetLogFileTimeFormat(format string) error {
+	o.LogFileTimeFormat = format
+	return nil
+}
+
+// SetLogPath sets the path for all logs.
+func (o *OptLog) SetLogPath(path string) error {
+	if path == "" {
+		return errors.New("log path cannot be empty")
+	}
+	o.LogPath = path
+	return nil
+}
+
+// SetFileNamePrefix sets the filename prefix.
+func (o *OptLog) SetFileNamePrefix(prefix string) error {
+	o.FileNamePrefix = prefix
+	return nil
+}
+
+// SetFileNameSuffixTimeFormat sets the filename suffix time format.
+func (o *OptLog) SetFileNameSuffixTimeFormat(format string) error {
+	o.FileNameSuffixTimeFormat = format
+	return nil
+}
+
+// SetSetErrFileHook sets whether to create a separate error log file.
+func (o *OptLog) SetSetErrFileHook(enabled bool) error {
+	o.SetErrFileHook = enabled
+	return nil
+}
+
+// SetKeepCount sets the number of logs to keep.
+func (o *OptLog) SetKeepCount(count int) error {
+	if count < 0 {
+		return errors.New("keep count cannot be negative")
+	}
+	o.KeepCount = count
+	return nil
+}
+
+// SetLogLevel sets the log level.
+// level : trace,debug,warn,warning,error,fatal,panic
+func (o *OptLog) SetLogLevel(level string) error {
+	if lvl, err := logrus.ParseLevel(level); err != nil {
+		return err
+	} else {
+		o.LogLevel = lvl
+	}
+	return nil
+}
+
+// SetErrLogPrefix sets the error log prefix.
+func (o *OptLog) SetErrLogPrefix(prefix string) error {
+	o.ErrLogPrefix = prefix
+	return nil
+}
+
+// SetErrLogSuffix sets the error log suffix.
+func (o *OptLog) SetErrLogSuffix(suffix string) error {
+	o.ErrLogSuffix = suffix
+	return nil
+}
+
 /*InitOpt
  * @msg init logrus params
  * @return: *OptLog
@@ -54,7 +128,7 @@ func InitOpt() *OptLog {
 		LogFileTimeFormat: "2006-01-02 15:04:05.000000",
 		//path for all logs
 		LogPath:        "./logs/",
-		FileNamePrefix: "log",
+		FileNamePrefix: "log", //log in access.log.20230105
 		//not work if specify %H%m%s, but below is enough
 		FileNameSuffixTimeFormat: "%Y%m%d",
 		SetErrFileHook:           true,
@@ -67,21 +141,32 @@ func InitOpt() *OptLog {
 	}
 }
 
-/*SetXLevel
- * @msg set log level, if it's warn
- *    	then will not record with level trace, debug and info
- *
- * @receiver levelName : trace|debug|info|warning|warn|error|fatal|panic
- * @return: *logrus.Logger
- * @return: error
+/**
+ * @description: LogOption为接受With函数的接口，
+ *			T为OptLog结构体，Apply为OptLog赋值的Set函数
  */
-func (opt *OptLog) SetXLevel(levelName string) error {
-	var err error
-	opt.LogLevel, err = logrus.ParseLevel(levelName)
-	if err != nil {
-		return err
-	}
-	return nil
+type LogOption[T any] interface {
+	Apply(*T) error
+}
+
+/**
+ * @description: 实现LogOption接口的函数的类型,对应不同结构体的Set函数
+ * @param {} T LogOpt的地址
+ * @return {*}
+ */
+type LogOptionFunc[T any] func(*T) error
+
+/**
+ * @description: 实现接口LogOption的Apply函数，
+ *				调用LogOpt类的结构体的Set函数，修改结构体默认值opt
+ * @param {*T} opt 有默认值的LogOpt结构指针
+ */
+func (f LogOptionFunc[T]) Apply(opt *T) error {
+	return f(opt)
+}
+
+func NewLogOptionFunc[T any](fn func(*T) error) LogOption[T] {
+	return LogOptionFunc[T](fn)
 }
 
 /*ConfigLogrus

@@ -1,33 +1,37 @@
-/**
- * @project xlogrus
- * @author justin-ren
- * @desc test user trace log
- * @date 10:35 PM 2/9/23
- **/
+/*
+ * @Author: justin-ren
+ * @Date: 2025-03-04 08:53:21
+ * @LastEditors: justin-ren
+ * @LastEditTime: 2025-03-04 10:13:08
+ * @FilePath: /xlogrus/user_log_test.go
+ * @Description: test user_log.o
+ *
+ */
 
-package user
+package xlogrus
 
 import (
 	"fmt"
-	"github.com/itchyny/timefmt-go"               //convert golang time layout to linux time layout
-	lTest "github.com/sirupsen/logrus/hooks/test" //logrus tools for test
-	ast "github.com/stretchr/testify/assert"      //continue next case in case even failed
-	req "github.com/stretchr/testify/require"     //exit if failed
 	"io"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/itchyny/timefmt-go"               //convert golang time layout to linux time layout
+	lTest "github.com/sirupsen/logrus/hooks/test" //logrus tools for test
+	ast "github.com/stretchr/testify/assert"      //continue next case in case even failed
+	req "github.com/stretchr/testify/require"     //exit if failed
 )
 
 // check log msg from stdout and log file
 func TestUserLog(t *testing.T) {
-	//get init value
-	opt := GetOpt()
-	//create log file under /tmp/
-	opt.LogPath = fmt.Sprintf("%v/logs/", os.TempDir())
+	// opt := GetUserOpt()
 	//create logrus.Logger
-	lg, err := New(opt)
+	path := fmt.Sprintf("%s/logs/", os.TempDir())
+	lg, opt, err := NewUserLog(
+		WithLogPath[UserOpt](path),
+	)
 	req.NoError(t, err)
 	//creat hook for lastEntry in stdout
 	hook := lTest.NewLocal(lg)

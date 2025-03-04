@@ -6,27 +6,28 @@
  * @date 2:45 PM 2/13/23
  **/
 
-package gorm
+package xlogrus
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/itchyny/timefmt-go"               //convert time layout from linux to golang
 	lTest "github.com/sirupsen/logrus/hooks/test" //logrus tools for test
 	ast "github.com/stretchr/testify/assert"      //continue next code in case even failed
 	req "github.com/stretchr/testify/require"     //exit if failed
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"io"
-	"os"
-	"strings"
-	"testing"
-	"time"
 )
 
-func initGormLog(t *testing.T) *LoggerGorm {
+func initGormLog(t *testing.T) *GormLog {
 	t.Helper()
-	optGM := GetOpt()
-	optGM.BKeywords = []BannedKeyword{
+	//  opt := GetGormOpt()
+	BKeywords := []BannedKeyword{
 		{
 			"pwd", true,
 		},
@@ -34,15 +35,18 @@ func initGormLog(t *testing.T) *LoggerGorm {
 			"password", false,
 		},
 	}
-	optGM.OptLogrus.LogPath = fmt.Sprintf("%v/", os.TempDir())
-	lm, err := New(optGM)
+	path := fmt.Sprintf("%v/logs/", os.TempDir())
+	lg, _, err := NewGormLog(
+		WithBKeywords[GormOpt](BKeywords),
+		WithLogPath[GormOpt](path),
+	)
 	req.NoError(t, err)
-	return lm
+	return lg
 }
 func TestIgnoreBKeyword(t *testing.T) {
-	var lm *LoggerGorm
+	var lg *GormLog
 	t.Run("InitLogGorm", func(t *testing.T) {
-		lm = initGormLog(t)
+		lg = initGormLog(t)
 	})
 	type args struct {
 		lContent string
@@ -56,7 +60,7 @@ func TestIgnoreBKeyword(t *testing.T) {
 		{"Ignored",
 			args{
 				`wrong Password 123
-failed with pwd 456`,
+ failed with pwd 456`,
 			},
 			"ignored line",
 			true,
@@ -64,7 +68,7 @@ failed with pwd 456`,
 		{"NotIgnored",
 			args{
 				`wrong Pass 123
-failed with Pwd 456`,
+ failed with Pwd 456`,
 			},
 			"ignored line",
 			false,
@@ -72,7 +76,7 @@ failed with Pwd 456`,
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := lm.ignoreBKeyword(tt.args.lContent)
+			got := lg.ignoreBKeyword(tt.args.lContent)
 			if tt.isWant {
 				ast.Equal(t, strings.Contains(got, tt.want), true)
 			} else {
@@ -88,18 +92,18 @@ func TestGormLog(t *testing.T) {
 	//redirect screen output to /dev/null
 	lm.Logger.SetOutput(io.Discard)
 	//got full path for db.log
-	FileNamePrefix := fmt.Sprintf("%s%s", lm.Opt.OptLogrus.LogPath, lm.Opt.OptLogrus.FileNamePrefix)
-	dbFile := fmt.Sprintf("%s.%s", FileNamePrefix, lm.Opt.OptLogrus.FileNameSuffixTimeFormat)
+	FileNamePrefix := fmt.Sprintf("%s%s", lm.Opt.LogPath, lm.Opt.FileNamePrefix)
+	dbFile := fmt.Sprintf("%s.%s", FileNamePrefix, lm.Opt.FileNameSuffixTimeFormat)
 	//got full path for error.log
-	FileNamePrefix = fmt.Sprintf("%s%s", lm.Opt.OptLogrus.LogPath, lm.Opt.OptLogrus.ErrLogPrefix)
-	errFile := fmt.Sprintf("%s.%s", FileNamePrefix, lm.Opt.OptLogrus.ErrLogSuffix)
+	// FileNamePrefix = fmt.Sprintf("%s%s", lm.Opt.OptLogrus.LogPath, lm.Opt.OptLogrus.ErrLogPrefix)
+	// errFile := fmt.Sprintf("%s.%s", FileNamePrefix, lm.Opt.OptLogrus.ErrLogSuffix)
 	//convert golang time layout to linux time layout which used in OptLog struct
 	tm, err := timefmt.Parse(time.Now().Format("2006/01/02 15:04:05"), "%Y/%m/%d %H:%M:%S")
 	req.NoError(t, err)
 
 	//got db.log and error.log with timestamp
 	dbFile = timefmt.Format(tm, dbFile)
-	errFile = timefmt.Format(tm, errFile)
+	// errFile = timefmt.Format(tm, errFile)
 
 	db, err := gorm.Open(sqlite.Open(
 		genSqliteConn(t)),
@@ -140,7 +144,7 @@ func TestGormLog(t *testing.T) {
 	req.NoError(t, err)
 	dbContent := string(lContent)
 
-	lContent, err = os.ReadFile(dbFile)
+	// lContent, err = os.ReadFile(dbFile)
 	req.NoError(t, err)
 	errContent := string(lContent)
 	tests := []struct {

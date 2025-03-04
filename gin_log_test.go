@@ -6,12 +6,10 @@
  * @date 7:32 PM 2/12/23
  **/
 
-package gin
+package xlogrus
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -19,8 +17,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	"github.com/itchyny/timefmt-go"               //convert golang time layout to linux time layout
 	lTest "github.com/sirupsen/logrus/hooks/test" //logrus tools for test
+
 	//ast "github.com/stretchr/testify/assert"      //continue next case in case even failed
 	req "github.com/stretchr/testify/require" //exit if failed
 )
@@ -32,7 +34,7 @@ type testRoute struct {
 	isWant bool
 }
 
-func ginLogHandle(t *testing.T, tr *testRoute, opt *OptGin, r *gin.Engine,
+func ginLogHandle(t *testing.T, tr *testRoute, opt *GinOpt, r *gin.Engine,
 	hook *lTest.Hook) {
 	t.Helper()
 	r.GET(tr.url, func(ctx *gin.Context) {
@@ -50,8 +52,8 @@ func ginLogHandle(t *testing.T, tr *testRoute, opt *OptGin, r *gin.Engine,
 	req.Equal(t, response.Code, http.StatusOK)
 	req.Contains(t, response.Body.String(), tr.want)
 
-	FileNamePrefix := fmt.Sprintf("%s%s", opt.OptLogrus.LogPath, opt.OptLogrus.FileNamePrefix)
-	accessFile := fmt.Sprintf("%s.%s", FileNamePrefix, opt.OptLogrus.FileNameSuffixTimeFormat)
+	FileNamePrefix := fmt.Sprintf("%s%s", opt.LogPath, opt.FileNamePrefix)
+	accessFile := fmt.Sprintf("%s.%s", FileNamePrefix, opt.FileNameSuffixTimeFormat)
 
 	lastEntry, err := hook.LastEntry().String()
 	req.NoError(t, err)
@@ -91,7 +93,7 @@ func TestGinLog(t *testing.T) {
 			false,
 		},
 	}
-	var opt *OptGin
+	var opt *GinOpt
 	var gLog *logrus.Logger
 	var ginHandler gin.HandlerFunc
 	var err error
@@ -99,12 +101,16 @@ func TestGinLog(t *testing.T) {
 	var hook *lTest.Hook
 
 	t.Run("initGinLog", func(t *testing.T) {
-		opt = GetOpt()
-		opt.OptLogrus.LogPath = fmt.Sprintf("%v/", os.TempDir())
-		opt.SkipRoute = map[string]struct{}{
+		opt = GetGinOpt()
+		path := fmt.Sprintf("%v/logs/", os.TempDir())
+		skiproute := map[string]struct{}{
 			"/skip": {},
 		}
-		gLog, ginHandler, err = New(opt)
+
+		gLog, ginHandler, opt, err = NewGinLog(
+			WithLogPath[GinOpt](path),
+			WithSkipRoute[GinOpt](skiproute),
+		)
 		//redirect stdout to /dev/null
 		gLog.SetOutput(io.Discard)
 		//creat hook for lastEntry from buffer
