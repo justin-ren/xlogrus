@@ -63,7 +63,7 @@ var lg *xlog.TLogrus
 
 ```
 - color is enabled in stdout
-![user log]()
+![user log](https://github.com/user-attachments/assets/a20a21cf-80c0-483c-b0cd-76ecf25c9bb8)
 - color is disabled in log file
 ```bash
 vscode ➜ /workspaces/go/xlogrus-edit (master) $ cat /tmp/logs/user.log
@@ -114,7 +114,7 @@ var gHandle gin.HandlerFunc
 
 ```
 - color is enabled in stdout
-![gin log]()
+![gin log](https://github.com/user-attachments/assets/d6620b78-cafc-4a57-a805-3f8847c96384)
 - color is disabled in log file
 ```bash
 vscode ➜ /workspaces/go/xlogrus-edit (master) $ cat /tmp/logs/error.log
@@ -176,7 +176,7 @@ type notExistingTable struct{}
 
 
 - color is enabled in stdout
-![gorm]()
+![gorm](https://github.com/user-attachments/assets/bc7ecc93-f1d7-427e-8d88-2d5c474cbb5f)
 - color is disabled in log file
 
 ```bash
