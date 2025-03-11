@@ -42,6 +42,18 @@ go get -u github.com/justin-ren/xlogrus
 ### User Log
 - example code
 ```golang
+import (
+	"database/sql"
+	"fmt"
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	xlog "github.com/justin-ren/xlogrus"
+	"github.com/pkg/errors"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+)
 
 
 func main() {
