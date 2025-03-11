@@ -42,9 +42,26 @@ go get -u github.com/justin-ren/xlogrus
 ### User Log
 - example code
 ```golang
-var lg *xlog.TLogrus
+
+
+func main() {
+	if len(os.Args) > 1 {
+		if os.Args[1] == "user" {
+			userLogTest()
+		} else if os.Args[1] == "gin" {
+			ginLogTest()
+		} else if os.Args[1] == "gorm" {
+			gormLogTest()
+		}
+	} else {
+		userLogTest()
+	}
+}
+
+func userLogTest() {
+	var lg *xlog.TLogrus
 	var err error
-	if lg, _,err = xlog.NewUserLog(
+	if lg, _, err = xlog.NewUserLog(
 		xlog.WithFileNamePrefix[xlog.UserOpt]("user.log"), // 自动继承方法
 		xlog.WithLogLevel[xlog.UserOpt]("info"),
 		xlog.WithLogPath[xlog.UserOpt]("/tmp/logs/"),
@@ -60,6 +77,7 @@ var lg *xlog.TLogrus
 	lg.Warnln("warn msg")
 	lg.Errorln("error msg")
 	lg.Fatalf("%+v", errors.New("error stack")) //save error stack to log filess
+}
 
 ```
 - color is enabled in stdout
@@ -87,9 +105,10 @@ runtime.goexit
 - example code
 ```golang
 //visit http://localhost:8080/log/skip and http://localhost:8080/log/hello for test
-var gHandle gin.HandlerFunc
+func ginLogTest() {
+	var gHandle gin.HandlerFunc
 	var err error
-	if _, gHandle, _,err = xlog.NewGinLog(
+	if _, gHandle, _, err = xlog.NewGinLog(
 		xlog.WithFileNamePrefix[xlog.GinOpt]("access.log"), // 自动继承方法
 		xlog.WithLogLevel[xlog.GinOpt]("info"),
 		xlog.WithLogPath[xlog.GinOpt]("/tmp/logs/"),
@@ -112,6 +131,8 @@ var gHandle gin.HandlerFunc
 		panic(errors.Cause(err))
 	}
 
+}
+
 ```
 - color is enabled in stdout
 ![gin log](https://github.com/user-attachments/assets/d6620b78-cafc-4a57-a805-3f8847c96384)
@@ -128,11 +149,12 @@ vscode ➜ /workspaces/go/xlogrus-edit (master) $ cat /tmp/logs/access.log
 ### Gorm log
 - example code
 ```golang
-type notExistingTable struct{}
+func gormLogTest() {
+	type notExistingTable struct{}
 	connString := fmt.Sprintf("file:%s?mode=memory&cache=shared", "gormLogTest")
 	var lg *xlog.GormLog
 	var err error
-	if lg, _,err = xlog.NewGormLog(
+	if lg, _, err = xlog.NewGormLog(
 		xlog.WithErrLogPrefix[xlog.GormOpt]("db.log"),
 		xlog.WithBKeywords[xlog.GormOpt]([]xlog.BannedKeyword{
 			{
@@ -171,6 +193,8 @@ type notExistingTable struct{}
 	if errCreate := db.Create(&notExistingTable{}).Error; errCreate != nil {
 		fmt.Printf("failed to create table as expected: %+v\n", errCreate)
 	}
+
+}
 ```
 
 
